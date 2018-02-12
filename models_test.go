@@ -3,6 +3,8 @@ package jsonapi
 import (
 	"fmt"
 	"time"
+
+	"github.com/globalsign/mgo/bson"
 )
 
 type BadModel struct {
@@ -76,6 +78,11 @@ type Blog struct {
 	CurrentPostID int       `jsonapi:"attr,current_post_id"`
 	CreatedAt     time.Time `jsonapi:"attr,created_at"`
 	ViewCount     int       `jsonapi:"attr,view_count"`
+}
+
+type BsonBlog struct {
+	ID       bson.ObjectId `jsonapi:"primary,bson-blogs"`
+	ClientID bson.ObjectId `jsonapi:"attr,client-id"`
 }
 
 func (b *Blog) JSONAPILinks() *Links {

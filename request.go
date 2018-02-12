@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/globalsign/mgo/bson"
 )
 
 const (
@@ -180,6 +182,11 @@ func unmarshalNode(data *Node, model reflect.Value, included *map[string]*Node) 
 			}
 
 			// Handle String case
+			if bson.IsObjectIdHex(data.ID) {
+				assign(fieldValue, reflect.ValueOf(bson.ObjectIdHex(data.ID)))
+				continue
+			}
+
 			if kind == reflect.String {
 				assign(fieldValue, v)
 				continue
@@ -266,6 +273,13 @@ func unmarshalNode(data *Node, model reflect.Value, included *map[string]*Node) 
 			}
 
 			v := reflect.ValueOf(val)
+			// Handle String case
+			if bid, ok := v.Interface().(string); ok {
+				if bson.IsObjectIdHex(bid) {
+					fieldValue.Set(reflect.ValueOf(bson.ObjectIdHex(bid)))
+					continue
+				}
+			}
 
 			// Handle field of type time.Time
 			if fieldValue.Type() == reflect.TypeOf(time.Time{}) {

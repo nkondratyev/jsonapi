@@ -7,6 +7,8 @@ import (
 	"sort"
 	"testing"
 	"time"
+
+	"github.com/globalsign/mgo/bson"
 )
 
 func TestMarshalPayload(t *testing.T) {
@@ -354,6 +356,37 @@ func TestSupportsAttributes(t *testing.T) {
 	}
 
 	if data.Attributes["title"] != "Title 1" {
+		t.Fatalf("Attributes hash not populated using tags correctly")
+	}
+}
+
+func TestBsonSupportsAttributes(t *testing.T) {
+	testModel := &BsonBlog{
+		ID:       bson.NewObjectId(),
+		ClientID: bson.NewObjectId(),
+	}
+
+	out := bytes.NewBuffer(nil)
+	if err := MarshalPayload(out, testModel); err != nil {
+		t.Fatal(err)
+	}
+
+	resp := new(OnePayload)
+	if err := json.NewDecoder(out).Decode(resp); err != nil {
+		t.Fatal(err)
+	}
+
+	data := resp.Data
+
+	if data.ID != testModel.ID.Hex() {
+		t.Fatalf("Expected ID")
+	}
+
+	if data.Attributes == nil {
+		t.Fatalf("Expected attributes")
+	}
+
+	if data.Attributes["client-id"] != testModel.ClientID.Hex() {
 		t.Fatalf("Attributes hash not populated using tags correctly")
 	}
 }

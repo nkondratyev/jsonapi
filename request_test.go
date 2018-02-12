@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/globalsign/mgo/bson"
 )
 
 func TestUnmarshall_attrStringSlice(t *testing.T) {
@@ -230,6 +232,22 @@ func TestUnmarshalSetsID(t *testing.T) {
 
 	if out.ID != 2 {
 		t.Fatalf("Did not set ID on dst interface")
+	}
+}
+
+func TestUnmarshalSetsBsonID(t *testing.T) {
+	in := samplePayloadWithBsonID()
+	out := new(BsonBlog)
+
+	if err := UnmarshalPayload(in, out); err != nil {
+		t.Fatal(err)
+	}
+
+	if out.ID != bson.ObjectIdHex("5a54c490c1fe762128f4f142") {
+		t.Fatalf("Did not set ID on dst interface")
+	}
+	if out.ClientID != bson.ObjectIdHex("5a54c490c1fe762128f4f142") {
+		t.Fatalf("Did not set ClientID on dst interface")
 	}
 }
 
@@ -819,6 +837,23 @@ func samplePayloadWithID() io.Reader {
 			Attributes: map[string]interface{}{
 				"title":      "New blog",
 				"view_count": 1000,
+			},
+		},
+	}
+
+	out := bytes.NewBuffer(nil)
+	json.NewEncoder(out).Encode(payload)
+
+	return out
+}
+
+func samplePayloadWithBsonID() io.Reader {
+	payload := &OnePayload{
+		Data: &Node{
+			ID:   "5a54c490c1fe762128f4f142",
+			Type: "bson-blogs",
+			Attributes: map[string]interface{}{
+				"client-id": "5a54c490c1fe762128f4f142",
 			},
 		},
 	}

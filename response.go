@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/globalsign/mgo/bson"
 )
 
 var (
@@ -251,7 +253,11 @@ func visitModelNode(model interface{}, included *map[string]*Node,
 			// Handle allowed types
 			switch kind {
 			case reflect.String:
-				node.ID = v.Interface().(string)
+				if s, ok := v.Interface().(bson.ObjectId); ok {
+					node.ID = s.Hex()
+				} else {
+					node.ID = v.Interface().(string)
+				}
 			case reflect.Int:
 				node.ID = strconv.FormatInt(int64(v.Interface().(int)), 10)
 			case reflect.Int8:
